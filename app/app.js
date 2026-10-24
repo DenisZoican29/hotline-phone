@@ -2,7 +2,7 @@
 
 const $ = (s) => document.querySelector(s);
 const MUSIC_LEVEL = 0.8;
-const DUCK_LEVEL = 0.18;
+const DUCK_LEVEL = 0.3;
 
 let content;
 let ctx, voiceGain, fxGain, musicGain;
