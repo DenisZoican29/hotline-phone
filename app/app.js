@@ -141,7 +141,7 @@ function stopVoice() {
 // ---------- songs ----------
 
 // Songs loaded with the eject button are saved on this phone only (IndexedDB), never uploaded.
-// Private copies of the app can also ship songs in audio/songs/; the phone's own songs win.
+// The app can also ship songs in audio/songs/ (from songs/ or my-songs/); the phone's own songs win.
 let songs = [];
 
 function songStore(mode, fn) {

@@ -1,4 +1,5 @@
 build/
+_site/
 # Your own soundtrack files: copyrighted, keep them out of any public repo.
 my-songs/
 app/audio/songs/

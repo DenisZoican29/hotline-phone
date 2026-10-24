@@ -6,12 +6,13 @@ A Hotline Miami–style cassette player for the iPhone (installable web app, wor
 - **SONG**: plays random songs back to back; press again to stop. Music goes quieter under voice lines.
 - **⏏ load songs**: pick songs from the phone. They are saved on that phone only and never uploaded.
 
-The voice lines and sound effects are generated locally (Windows text-to-speech plus synthesis). No game audio is included, and the public site ships without songs.
+The voice lines and sound effects are generated locally (Windows text-to-speech plus synthesis). No game audio is included.
 
 ## Layout
 
-- `app/`: the website. GitHub Pages publishes this folder on every push to `main`.
+- `app/`: the website. On every push to `main`, `tools/build-site.js` copies it plus `songs/` into `_site/` and GitHub Pages publishes that.
 - `app/content.json`: the voice lines. Edit the text here.
+- `songs/`: songs built into the public site. Drop audio files in, commit and push. Anyone with the link can download them.
 - `my-songs/`: your own song files (git-ignored, never published).
 - `tools/`: audio generators.
 
@@ -28,7 +29,7 @@ node tools/fetch-fonts.js         # fonts
 
 `build-audio.js` also loudness-matches every file in `my-songs/` into `app/audio/songs/` (git-ignored). Those copies are the ones to put on the phone.
 
-After changing anything in `app/`, bump `VERSION` in `app/sw.js` so installed phones download the new copy.
+Each deploy stamps `VERSION` in `sw.js` with the commit, so installed phones download the new copy (songs included). Bump `VERSION` by hand only for local or private copies.
 
 ## Private preview
 

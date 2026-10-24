@@ -17,7 +17,7 @@ self.addEventListener('install', (e) => {
       ...[...content.fx.map((f) => f.id), 'click', 'beep', 'rewind'].map((id) => `audio/fx/${id}.mp3`),
     ];
     await cache.addAll([...new Set(audio)]);
-    // Built-in songs exist only on private copies; the public site has none.
+    // Built-in songs come from songs/ (the public site) or my-songs/ (private copies).
     const index = await fetch('audio/songs/index.json').catch(() => null);
     if (index && index.ok) {
       const list = await index.clone().json();
