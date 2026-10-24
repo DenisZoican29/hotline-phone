@@ -8,7 +8,8 @@ let content;
 let ctx, voiceGain, fxGain, musicGain;
 const cache = new Map();
 // Songs stream through one <audio> element (full songs are too big to decode into memory on a phone).
-const music = { track: null, el: null };
+const music = { track: null, el: null, playing: false };
+let played = [], pos = -1; // songs in the order they played, for the previous key
 let voice = null; // the line currently playing
 let wakeLock = null;
 
@@ -31,7 +32,7 @@ function shuffleBag(items) {
     return last;
   };
 }
-let nextLine, nextSong;
+let nextLine, pickSong;
 
 // ---------- audio ----------
 
@@ -54,14 +55,14 @@ function initAudio() {
   music.el = new Audio();
   music.el.preload = 'auto';
   ctx.createMediaElementSource(music.el).connect(musicGain);
-  music.el.addEventListener('ended', () => { if (music.track) playSong(); }); // the tape keeps going
+  music.el.addEventListener('ended', () => { if (music.playing) nextSong(); }); // the tape keeps going
   const s = ctx.createBufferSource();
   s.buffer = ctx.createBuffer(1, 1, 22050);
   s.connect(ctx.destination);
   s.start(0);
   ctx.resume();
   keepAwake();
-  // Warm the cache so the voice button reacts instantly.
+  // Warm the cache so voice lines start instantly.
   setTimeout(() => content.messages.forEach((m) => load(msgUrl(m.id)).catch(() => {})), 1000);
 }
 
@@ -99,7 +100,7 @@ function duck(on) {
 const msgUrl = (id) => `audio/msg/${id}.mp3`;
 const fxUrl = (id) => `audio/fx/${id}.mp3`;
 
-// ---------- voice button ----------
+// ---------- voice lines (double-tap next) ----------
 
 async function playVoice() {
   initAudio();
@@ -146,7 +147,7 @@ let songs = [];
 async function loadSongList() {
   const list = await fetch('audio/songs/index.json').then((r) => (r.ok ? r.json() : [])).catch(() => []);
   songs = list.map((s) => ({ title: s.title, url: `audio/songs/${s.file}` }));
-  nextSong = shuffleBag(songs);
+  pickSong = shuffleBag(songs);
 }
 
 let labelTimer;
@@ -156,30 +157,75 @@ function flashLabel(text) {
   labelTimer = setTimeout(() => { $('#cassette-title').textContent = 'HOTLINE'; }, 2500);
 }
 
-// ---------- song button ----------
+// ---------- transport keys ----------
 
-function playSong() {
-  initAudio();
-  const t = nextSong();
-  music.track = t;
-  music.el.src = t.url;
-  music.el.play().catch(() => { if (music.track === t) stopSong(); });
-  load(fxUrl('click')).then((b) => playBuf(b, 0, fxGain)).catch(() => {});
+const tapeClick = () => load(fxUrl('click')).then((b) => playBuf(b, 0, fxGain)).catch(() => {});
+
+function resumeSong() {
+  const t = music.track;
+  music.playing = true;
+  // AbortError only means another key changed or paused the song before it started.
+  music.el.play().catch((e) => { if (music.track === t && e.name !== 'AbortError') { music.playing = false; updateUI(); } });
   updateUI();
 }
 
-function stopSong() {
-  music.track = null;
-  music.el?.pause();
-  updateUI();
+function startSong(t) {
+  music.track = t;
+  music.el.src = t.url;
+  flashLabel(t.title.toUpperCase());
+  resumeSong();
+}
+
+function nextSong() {
+  if (!songs.length) return flashLabel('NO SONGS');
+  if (pos < played.length - 1) pos++;
+  else pos = played.push(pickSong()) - 1;
+  startSong(played[pos]);
+  tapeClick();
+}
+
+function prevSong() {
+  if (!music.track) return nextSong();
+  // Past the first few seconds, previous restarts the current song.
+  if (music.el.currentTime > 3 || pos === 0) {
+    music.el.currentTime = 0;
+    resumeSong();
+  } else {
+    startSong(played[--pos]);
+  }
+  tapeClick();
+}
+
+function togglePlay() {
+  if (!music.track) return nextSong();
+  if (music.playing) {
+    music.playing = false;
+    music.el.pause();
+    updateUI();
+  } else {
+    resumeSong();
+  }
+  tapeClick();
+}
+
+// Next waits a moment so a second tap can turn it into a voice line instead.
+let nextTimer = null;
+function onNextTap() {
+  if (nextTimer) {
+    clearTimeout(nextTimer);
+    nextTimer = null;
+    playVoice();
+  } else {
+    nextTimer = setTimeout(() => { nextTimer = null; nextSong(); }, 300);
+  }
 }
 
 // ---------- the player ----------
 
 function updateUI() {
-  $('#voice').classList.toggle('on', !!voice);
-  $('#song').classList.toggle('on', !!music.track);
-  $('#cassette').classList.toggle('spinning', !!voice || !!music.track);
+  $('#play').classList.toggle('on', music.playing);
+  $('#play').setAttribute('aria-label', music.playing ? 'Pause' : 'Play');
+  $('#cassette').classList.toggle('spinning', !!voice || music.playing);
   $('#cassette-side').textContent = !voice && music.track ? 'SIDE B' : 'SIDE A';
 }
 
@@ -217,15 +263,18 @@ fetch('content.json')
   .then((c) => {
     content = c;
     nextLine = shuffleBag(c.messages.filter((m) => !m.silent));
-    $('#voice').addEventListener('click', () => (voice ? stopVoice() : playVoice()));
-    $('#song').addEventListener('click', () => {
-      if (music.track) stopSong();
-      else if (songs.length) playSong();
-      else flashLabel('NO SONGS');
-    });
+    // initAudio runs straight in each tap: iOS only unlocks audio inside the gesture itself.
+    const key = (id, fn) => $(id).addEventListener('click', () => { initAudio(); fn(); });
+    key('#prev', prevSong);
+    key('#play', togglePlay);
+    key('#next', onNextTap);
     loadSongList();
     try { navigator.storage?.persist?.(); } catch {} // ask the phone not to clear the offline copy
     updateUI();
     requestAnimationFrame(frame);
-    if ('serviceWorker' in navigator && !window.HOTLINE_ARTIFACT) navigator.serviceWorker.register('sw.js').catch(() => {});
+    if ('serviceWorker' in navigator && !window.HOTLINE_ARTIFACT) {
+      // A new deploy takes over in the background; reload once so it shows right away.
+      if (navigator.serviceWorker.controller) navigator.serviceWorker.addEventListener('controllerchange', () => location.reload(), { once: true });
+      navigator.serviceWorker.register('sw.js').catch(() => {});
+    }
   });

@@ -37,15 +37,16 @@
     </div>
 
     <div class="keys">
-      <button class="key" id="voice" aria-label="Play a random voice line, press again to stop">
-        <span class="led"></span>
-        <span class="icon">📞</span>
-        <span class="label">Voice</span>
+      <button class="key" id="prev" aria-label="Previous song">
+        <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5 5h3v14H5zM20 5v14L9 12z"/></svg>
       </button>
-      <button class="key" id="song" aria-label="Play a random song, press again to stop">
+      <button class="key" id="play" aria-label="Play">
         <span class="led"></span>
-        <span class="icon">♫</span>
-        <span class="label">Song</span>
+        <svg class="i-play" viewBox="0 0 24 24" aria-hidden="true"><path d="M7 4v16l13-8z"/></svg>
+        <svg class="i-pause" viewBox="0 0 24 24" aria-hidden="true"><path d="M6 4h4v16H6zM14 4h4v16h-4z"/></svg>
+      </button>
+      <button class="key" id="next" aria-label="Next song, double-tap for a voice line">
+        <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M16 5h3v14h-3zM4 5v14l11-7z"/></svg>
       </button>
     </div>
 

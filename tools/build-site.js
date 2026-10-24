@@ -17,7 +17,7 @@ const songFiles = fs.existsSync(SONGS_IN) ? fs.readdirSync(SONGS_IN).filter((f) 
 const songIndex = [];
 for (const f of songFiles) {
   const { name, ext } = path.parse(f);
-  const title = name.split(/ [-–] /).pop().trim(); // "Soundtrack - Le Perv" -> "Le Perv"
+  const title = name.split(/ [-–] /).pop().replace(/[-_]+/g, ' ').trim(); // "Soundtrack - Le Perv" or "le-perv" -> "Le Perv" / "le perv"
   const file = title.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '') + ext.toLowerCase();
   fs.copyFileSync(path.join(SONGS_IN, f), path.join(SONGS_OUT, file));
   songIndex.push({ title, file });
