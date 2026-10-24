@@ -1,0 +1,49 @@
+{
+  "messages": [
+    { "id": "m1", "group": "mask", "icon": "🐓", "speaker": "RICHARD", "label": "Hurting people?",
+      "text": "Do you like hurting other people?",
+      "tts": "Do you like... hurting other people?", "voice": "David", "rate": -3, "pitch": 0.80, "fx": "mask" },
+    { "id": "m3", "group": "mask", "icon": "🦉", "speaker": "RASMUS", "label": "This talk",
+      "text": "Why are we having this conversation?",
+      "tts": "Why are we having... this conversation?", "voice": "David", "rate": -3, "pitch": 0.76, "fx": "mask" },
+    { "id": "m4", "group": "mask", "icon": "🐓", "speaker": "RICHARD", "label": "Busy tonight",
+      "text": "You've been busy tonight, haven't you?",
+      "tts": "You've been busy tonight... haven't you?", "voice": "David", "rate": -3, "pitch": 0.80, "fx": "mask" },
+    { "id": "m5", "group": "mask", "icon": "🦉", "speaker": "RASMUS", "label": "Remember?",
+      "text": "You don't remember, do you?",
+      "tts": "You don't remember... do you?", "voice": "David", "rate": -3, "pitch": 0.76, "fx": "mask" },
+
+    { "id": "c1", "group": "call", "icon": "☎", "speaker": "DAN · BABYSITTERS CLUB", "label": "Babysitters",
+      "text": "Hi, this is Dan from the Babysitters Club. We're calling to confirm your appointment at the party tonight. The kids are expecting you. Please be discreet.",
+      "tts": "Hi, this is Dan from the Babysitters Club. We're calling to confirm your appointment at the party tonight. The kids are expecting you. Please, be discreet.", "voice": "David", "rate": 0, "pitch": 1.04, "fx": "phone" },
+    { "id": "c2", "group": "call", "icon": "☎", "speaker": "PETE · NEON DRY CLEANING", "label": "Dry cleaning",
+      "text": "Hey, it's Pete from Neon Dry Cleaning. Your letterman jacket is ready for pickup. We couldn't get the stains out. Sorry.",
+      "tts": "Hey, it's Pete from Neon Dry Cleaning. Your letterman jacket is ready for pickup. We couldn't get the stains out. Sorry.", "voice": "David", "rate": 1, "pitch": 1.12, "fx": "phone" },
+    { "id": "c3", "group": "call", "icon": "☎", "speaker": "50 BLESSINGS COMMITTEE", "label": "50 Blessings",
+      "text": "This is a reminder from the Fifty Blessings neighborhood committee. The party starts at nine. Wear something nice. Don't be late.",
+      "tts": "This is a reminder from the Fifty Blessings neighborhood committee. The party starts at nine. Wear something nice. Don't be late.", "voice": "Zira", "rate": -1, "pitch": 0.96, "fx": "phone" },
+    { "id": "c4", "group": "call", "icon": "☎", "speaker": "RICKY · PIZZA PALACE", "label": "Pizza order",
+      "text": "Yo, it's Ricky from Pizza Palace. Your order's ready. Extra large, with everything. Come alone.",
+      "tts": "Yo, it's Ricky from Pizza Palace. Your order's ready. Extra large, with everything. Come... alone.", "voice": "David", "rate": 1, "pitch": 0.92, "fx": "phone" },
+    { "id": "c6", "group": "call", "icon": "☎", "speaker": "MIAMI P.D.", "label": "Police",
+      "text": "This is the Miami Police Department. We've had reports of a man in a rooster mask and a letterman jacket. Please stay where you are.",
+      "tts": "This is the Miami Police Department. We've had reports of a man in a rooster mask, and a letterman jacket. Please stay where you are.", "voice": "David", "rate": 0, "pitch": 0.94, "fx": "phone" },
+
+    { "id": "j1", "group": "jacket", "icon": "🧥", "speaker": "JACKET", "label": "Jacket speaks",
+      "text": "...", "silent": true }
+  ],
+  "system": [
+    { "id": "s_new", "text": "You have one new message.", "tts": "You have... one... new message.", "voice": "Zira", "rate": -2, "pitch": 0.98, "fx": "machine" },
+    { "id": "s_end", "text": "End of messages.", "tts": "End of messages.", "voice": "Zira", "rate": -2, "pitch": 0.98, "fx": "machine" }
+  ],
+  "fx": [
+    { "id": "ring", "label": "Ring", "icon": "📞" },
+    { "id": "punch", "label": "Punch", "icon": "👊" },
+    { "id": "door", "label": "Door kick", "icon": "🚪" },
+    { "id": "bat", "label": "Bat", "icon": "🏏" },
+    { "id": "shotgun", "label": "Shotgun", "icon": "💥" },
+    { "id": "clear", "label": "Stage clear", "icon": "⭐" },
+    { "id": "beep", "label": "Beep", "icon": "🔴" },
+    { "id": "hangup", "label": "Hang up", "icon": "☎" }
+  ]
+}

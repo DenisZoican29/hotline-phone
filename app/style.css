@@ -1,0 +1,136 @@
+@font-face { font-family: 'Bungee'; src: url(fonts/bungee.woff2) format('woff2'); font-display: block; }
+@font-face { font-family: 'VT323'; src: url(fonts/vt323.woff2) format('woff2'); font-display: block; }
+
+:root {
+  color-scheme: dark;
+  --pink: #ff2a8a;
+  --cyan: #2af5ff;
+  --night: #1a0626;
+  --plum: #3b0a4f;
+  --plastic: #dccfb3;
+  --plastic-lo: #c3b393;
+  --plastic-edge: #8f7f62;
+  --key: #3a3238;
+  --key-lo: #1c171b;
+  --key-text: #f1e9d8;
+  --led: #ff3b30;
+  --led-off: #5a1a17;
+}
+
+* { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
+html, body { margin: 0; height: 100%; }
+body {
+  background: var(--night);
+  color: var(--key-text);
+  font-family: 'VT323', ui-monospace, monospace;
+  overflow: hidden;
+  -webkit-user-select: none;
+  user-select: none;
+  -webkit-touch-callout: none;
+  display: grid;
+  place-items: center;
+  padding-block: env(safe-area-inset-top, 0px) env(safe-area-inset-bottom, 0px);
+  padding-left: max(16px, env(safe-area-inset-left, 0px));
+  padding-right: max(16px, env(safe-area-inset-right, 0px));
+}
+button { font: inherit; color: inherit; border: 0; background: none; cursor: pointer; touch-action: manipulation; }
+
+/* ---------- Miami sky ---------- */
+.sky {
+  position: fixed; inset: 0; z-index: -2;
+  background:
+    repeating-linear-gradient(180deg, transparent 0 34px, rgba(26, 6, 38, .55) 34px 40px) bottom / 100% 32% no-repeat,
+    linear-gradient(180deg, #12031c 0%, var(--plum) 35%, #8a1a6e 70%, var(--pink) 100%);
+  animation: hue 14s ease-in-out infinite alternate;
+}
+@keyframes hue { to { filter: hue-rotate(-35deg) saturate(1.2); } }
+.scanlines {
+  position: fixed; inset: 0; z-index: 50; pointer-events: none;
+  background: repeating-linear-gradient(180deg, rgba(0, 0, 0, .18) 0 1px, transparent 1px 3px);
+  mix-blend-mode: multiply;
+}
+
+/* ---------- the player ---------- */
+.player {
+  width: 100%; max-width: 420px;
+  padding: 22px 18px 18px;
+  border-radius: 28px;
+  background:
+    linear-gradient(180deg, rgba(255, 255, 255, .35), transparent 18%),
+    linear-gradient(180deg, var(--plastic) 0%, var(--plastic-lo) 100%);
+  border: 2px solid var(--plastic-edge);
+  box-shadow:
+    inset 0 -6px 0 rgba(0, 0, 0, .12),
+    0 12px 0 #6e5f45,
+    0 22px 40px rgba(0, 0, 0, .55),
+    0 0 70px rgba(42, 245, 255, .3);
+  display: grid; gap: 22px;
+}
+
+.window {
+  padding: 14px;
+  border-radius: 16px;
+  background: linear-gradient(160deg, #6a5a64, #3d3238 60%, #4a3d44);
+  box-shadow: inset 0 4px 14px rgba(0, 0, 0, .6), 0 1px 0 rgba(255, 255, 255, .5);
+}
+.cassette { width: 100%; height: auto; display: block; }
+.c-shell { fill: #241c22; }
+.c-label { fill: #f2ecdc; }
+.c-stripe { fill: var(--pink); }
+.c-side { font: 13px 'VT323', monospace; fill: #fff; text-anchor: middle; letter-spacing: 2px; }
+.c-title { font: 12px 'Bungee', sans-serif; fill: var(--plum); text-anchor: middle; }
+.c-window { fill: #1a1418; }
+.c-tape { fill: #4a2e22; }
+.c-hub { fill: #f2ecdc; }
+.c-spoke { stroke: #241c22; stroke-width: 3; stroke-linecap: round; }
+.c-bottom { fill: #2f262c; }
+.c-hole { fill: #0f0b0e; }
+.reel { transform-box: fill-box; transform-origin: center; }
+.spinning .reel { animation: spin 1.1s linear infinite; }
+@keyframes spin { to { transform: rotate(-360deg); } }
+
+/* ---------- the two keys ---------- */
+.keys { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; }
+.key {
+  position: relative;
+  min-height: 84px;
+  border-radius: 12px;
+  background: linear-gradient(180deg, #4a4148, var(--key));
+  color: var(--key-text);
+  box-shadow: 0 8px 0 var(--key-lo), 0 10px 14px rgba(0, 0, 0, .35), inset 0 1px 0 rgba(255, 255, 255, .15);
+  display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 6px;
+  transition: transform .06s, box-shadow .06s;
+}
+.key:active { transform: translateY(6px); box-shadow: 0 2px 0 var(--key-lo), inset 0 1px 0 rgba(255, 255, 255, .15); }
+.key:focus-visible { outline: 3px solid var(--cyan); outline-offset: 3px; }
+.key .icon { font-size: 26px; line-height: 1; }
+.key .label { font-family: 'Bungee', sans-serif; font-size: 16px; letter-spacing: 1px; }
+.key .led {
+  position: absolute; top: 9px; right: 9px; width: 9px; height: 9px; border-radius: 50%;
+  background: var(--led-off);
+}
+.key.on .led { background: var(--led); box-shadow: 0 0 10px var(--led); animation: blink .6s steps(1) infinite; }
+@keyframes blink { 50% { opacity: .35; } }
+
+.grille {
+  height: 26px; border-radius: 8px;
+  background: radial-gradient(circle, #5d5040 2.2px, transparent 2.6px) 0 0 / 11px 9px;
+  opacity: .8;
+}
+
+/* Engraved into the plastic: easy to find, but quiet next to the two main keys. */
+.eject {
+  justify-self: center;
+  margin-top: -10px;
+  padding: 6px 12px;
+  font-family: 'Bungee', sans-serif; font-size: 12px; letter-spacing: 1px; text-transform: uppercase;
+  color: #8a7a5c;
+  text-shadow: 0 1px 0 rgba(255, 255, 255, .6);
+  border-radius: 6px;
+}
+.eject:active { color: var(--key); }
+.eject:focus-visible { outline: 2px solid var(--cyan); }
+
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after { animation-duration: 0s !important; animation-iteration-count: 1 !important; }
+}

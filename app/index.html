@@ -1,0 +1,59 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover, user-scalable=no">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <meta name="apple-mobile-web-app-title" content="Hotline">
+  <meta name="theme-color" content="#1a0626">
+  <link rel="manifest" href="manifest.webmanifest">
+  <link rel="apple-touch-icon" href="icons/apple-touch-icon.png">
+  <link rel="icon" href="icons/icon-192.png">
+  <link rel="stylesheet" href="style.css">
+  <title>Hotline Machine</title>
+</head>
+<body>
+  <div class="sky" aria-hidden="true"></div>
+  <div class="scanlines" aria-hidden="true"></div>
+
+  <main class="player">
+    <div class="window">
+      <svg class="cassette" id="cassette" viewBox="0 0 240 150" aria-hidden="true">
+        <rect x="4" y="4" width="232" height="142" rx="12" class="c-shell"/>
+        <rect x="18" y="14" width="204" height="88" rx="6" class="c-label"/>
+        <rect x="18" y="14" width="204" height="18" rx="4" class="c-stripe"/>
+        <text x="120" y="28" class="c-side" id="cassette-side">SIDE A</text>
+        <text x="120" y="96" class="c-title" id="cassette-title">HOTLINE</text>
+        <rect x="58" y="40" width="124" height="44" rx="22" class="c-window"/>
+        <circle cx="80" cy="62" r="20" class="c-tape" id="reel-tape-l"/>
+        <circle cx="160" cy="62" r="20" class="c-tape" id="reel-tape-r"/>
+        <g class="reel"><circle cx="80" cy="62" r="11" class="c-hub"/><path d="M80 53v6M80 65v6M72 62h6M82 62h6" class="c-spoke"/></g>
+        <g class="reel"><circle cx="160" cy="62" r="11" class="c-hub"/><path d="M160 53v6M160 65v6M152 62h6M162 62h6" class="c-spoke"/></g>
+        <path d="M44 146l10-30h132l10 30" class="c-bottom"/>
+        <circle cx="76" cy="132" r="4" class="c-hole"/><circle cx="164" cy="132" r="4" class="c-hole"/>
+      </svg>
+    </div>
+
+    <div class="keys">
+      <button class="key" id="voice" aria-label="Play a random voice line, press again to stop">
+        <span class="led"></span>
+        <span class="icon">📞</span>
+        <span class="label">Voice</span>
+      </button>
+      <button class="key" id="song" aria-label="Play a random song, press again to stop">
+        <span class="led"></span>
+        <span class="icon">♫</span>
+        <span class="label">Song</span>
+      </button>
+    </div>
+
+    <div class="grille" aria-hidden="true"></div>
+    <button class="eject" id="eject">⏏ load songs</button>
+    <input type="file" id="picker" accept="audio/*,.mp3,.m4a" multiple hidden>
+  </main>
+
+  <script src="app.js"></script>
+</body>
+</html>
