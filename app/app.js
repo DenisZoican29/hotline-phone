@@ -173,6 +173,9 @@ function startSong(t) {
   music.track = t;
   music.el.src = t.url;
   flashLabel(t.title.toUpperCase());
+  if ('mediaSession' in navigator) {
+    navigator.mediaSession.metadata = new MediaMetadata({ title: t.title, artist: 'Hotline', artwork: [{ src: 'icons/icon-512.png', sizes: '512x512', type: 'image/png' }] });
+  }
   resumeSong();
 }
 
@@ -220,9 +223,20 @@ function onNextTap() {
   }
 }
 
+// Lock screen, Control Center and headphone buttons.
+function setupMediaKeys() {
+  if (!('mediaSession' in navigator)) return;
+  const on = (action, fn) => { try { navigator.mediaSession.setActionHandler(action, fn); } catch {} };
+  on('play', () => { if (!music.playing) togglePlay(); });
+  on('pause', () => { if (music.playing) togglePlay(); });
+  on('nexttrack', nextSong);
+  on('previoustrack', prevSong);
+}
+
 // ---------- the player ----------
 
 function updateUI() {
+  if ('mediaSession' in navigator && music.track) navigator.mediaSession.playbackState = music.playing ? 'playing' : 'paused';
   $('#play').classList.toggle('on', music.playing);
   $('#play').setAttribute('aria-label', music.playing ? 'Pause' : 'Play');
   $('#cassette').classList.toggle('spinning', !!voice || music.playing);
@@ -268,6 +282,7 @@ fetch('content.json')
     key('#prev', prevSong);
     key('#play', togglePlay);
     key('#next', onNextTap);
+    setupMediaKeys();
     loadSongList();
     try { navigator.storage?.persist?.(); } catch {} // ask the phone not to clear the offline copy
     updateUI();
