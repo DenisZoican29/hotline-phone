@@ -118,18 +118,24 @@ button { font: inherit; color: inherit; border: 0; background: none; cursor: poi
   opacity: .8;
 }
 
-/* Engraved into the plastic: easy to find, but quiet next to the two main keys. */
-.eject {
-  justify-self: center;
-  margin-top: -10px;
-  padding: 6px 12px;
-  font-family: 'Bungee', sans-serif; font-size: 12px; letter-spacing: 1px; text-transform: uppercase;
-  color: #8a7a5c;
-  text-shadow: 0 1px 0 rgba(255, 255, 255, .6);
-  border-radius: 6px;
+/* Phone on its side: cassette on the left, keys stacked on the right, everything sized to the height. */
+@media (orientation: landscape) and (max-height: 560px) {
+  .player {
+    width: auto; max-width: none;
+    padding: 14px;
+    grid-template-columns: auto minmax(150px, 220px);
+    align-items: center; gap: 18px;
+  }
+  .window { padding: 10px; }
+  .cassette {
+    height: calc(100vh - 100px - env(safe-area-inset-top, 0px) - env(safe-area-inset-bottom, 0px));
+    height: calc(100dvh - 100px - env(safe-area-inset-top, 0px) - env(safe-area-inset-bottom, 0px));
+    width: auto; aspect-ratio: 240 / 150; max-width: 55vw;
+  }
+  .keys { grid-template-columns: 1fr; }
+  .key { min-height: 0; height: clamp(64px, 30dvh, 110px); }
+  .grille { display: none; }
 }
-.eject:active { color: var(--key); }
-.eject:focus-visible { outline: 2px solid var(--cyan); }
 
 @media (prefers-reduced-motion: reduce) {
   *, *::before, *::after { animation-duration: 0s !important; animation-iteration-count: 1 !important; }

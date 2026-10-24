@@ -140,40 +140,13 @@ function stopVoice() {
 
 // ---------- songs ----------
 
-// Songs loaded with the eject button are saved on this phone only (IndexedDB), never uploaded.
-// The app can also ship songs in audio/songs/ (from songs/ or my-songs/); the phone's own songs win.
+// Songs ship with the app in audio/songs/ (from songs/ on the public site, my-songs/ on private copies).
 let songs = [];
 
-function songStore(mode, fn) {
-  return new Promise((resolve, reject) => {
-    const open = indexedDB.open('hotline', 1);
-    open.onupgradeneeded = () => open.result.createObjectStore('songs', { autoIncrement: true });
-    open.onerror = () => reject(open.error);
-    open.onsuccess = () => {
-      const tx = open.result.transaction('songs', mode);
-      const req = fn(tx.objectStore('songs'));
-      tx.oncomplete = () => resolve(req && req.result);
-      tx.onerror = () => reject(tx.error);
-    };
-  });
-}
-
 async function loadSongList() {
-  songs.forEach((s) => s.own && URL.revokeObjectURL(s.url));
-  const mine = await songStore('readonly', (s) => s.getAll()).catch(() => []);
-  if (mine.length) {
-    songs = mine.map((s) => ({ title: s.name, url: URL.createObjectURL(new Blob([s.data], { type: s.type || 'audio/mpeg' })), own: true }));
-  } else {
-    const list = await fetch('audio/songs/index.json').then((r) => (r.ok ? r.json() : [])).catch(() => []);
-    songs = list.map((s) => ({ title: s.title, url: `audio/songs/${s.file}` }));
-  }
+  const list = await fetch('audio/songs/index.json').then((r) => (r.ok ? r.json() : [])).catch(() => []);
+  songs = list.map((s) => ({ title: s.title, url: `audio/songs/${s.file}` }));
   nextSong = shuffleBag(songs);
-}
-
-async function saveSongs(files) {
-  // ArrayBuffers rather than Blobs: older iOS versions can't keep Blobs in IndexedDB.
-  const items = await Promise.all(files.map(async (f) => ({ name: f.name, type: f.type, data: await f.arrayBuffer() })));
-  await songStore('readwrite', (s) => { s.clear(); items.forEach((it) => s.add(it)); });
 }
 
 let labelTimer;
@@ -181,21 +154,6 @@ function flashLabel(text) {
   clearTimeout(labelTimer);
   $('#cassette-title').textContent = text;
   labelTimer = setTimeout(() => { $('#cassette-title').textContent = 'HOTLINE'; }, 2500);
-}
-
-async function onSongsPicked() {
-  const files = [...$('#picker').files];
-  $('#picker').value = '';
-  if (!files.length) return;
-  stopSong();
-  flashLabel('LOADING…');
-  try {
-    await saveSongs(files);
-    await loadSongList();
-    flashLabel(`${songs.length} SONGS LOADED`);
-  } catch {
-    flashLabel('COULD NOT LOAD');
-  }
 }
 
 // ---------- song button ----------
@@ -263,12 +221,10 @@ fetch('content.json')
     $('#song').addEventListener('click', () => {
       if (music.track) stopSong();
       else if (songs.length) playSong();
-      else $('#picker').click(); // nothing on the tape yet: pick songs from the phone
+      else flashLabel('NO SONGS');
     });
-    $('#eject').addEventListener('click', () => $('#picker').click());
-    $('#picker').addEventListener('change', onSongsPicked);
     loadSongList();
-    try { navigator.storage?.persist?.(); } catch {} // ask the phone not to clear the songs
+    try { navigator.storage?.persist?.(); } catch {} // ask the phone not to clear the offline copy
     updateUI();
     requestAnimationFrame(frame);
     if ('serviceWorker' in navigator && !window.HOTLINE_ARTIFACT) navigator.serviceWorker.register('sw.js').catch(() => {});

@@ -4,7 +4,6 @@ A Hotline Miami–style cassette player for the iPhone (installable web app, wor
 
 - **VOICE**: plays a random line; press again to stop. Every line plays once before any repeats.
 - **SONG**: plays random songs back to back; press again to stop. Music goes quieter under voice lines.
-- **⏏ load songs**: pick songs from the phone. They are saved on that phone only and never uploaded.
 
 The voice lines and sound effects are generated locally (Windows text-to-speech plus synthesis). No game audio is included.
 
@@ -27,7 +26,7 @@ python tools/icons.py             # app icons
 node tools/fetch-fonts.js         # fonts
 ```
 
-`build-audio.js` also loudness-matches every file in `my-songs/` into `app/audio/songs/` (git-ignored). Those copies are the ones to put on the phone.
+`build-audio.js` also loudness-matches every file in `my-songs/` into `app/audio/songs/` (git-ignored). Those copies are the ones to put in `songs/`.
 
 Each deploy stamps `VERSION` in `sw.js` with the commit, so installed phones download the new copy (songs included). Bump `VERSION` by hand only for local or private copies.
 
