@@ -15,12 +15,15 @@ let wakeLock = null;
 
 // ---------- shuffle: everything plays once before anything repeats ----------
 
+// Only ticked items (see the menu) are picked; returns null when none are ticked.
 function shuffleBag(items) {
   let bag = [];
   let last = null;
   return () => {
+    bag = bag.filter(isOn);
     if (!bag.length) {
-      bag = [...items];
+      bag = items.filter(isOn);
+      if (!bag.length) return null;
       for (let i = bag.length - 1; i > 0; i--) {
         const j = Math.floor(Math.random() * (i + 1));
         [bag[i], bag[j]] = [bag[j], bag[i]];
@@ -55,7 +58,7 @@ function initAudio() {
   music.el = new Audio();
   music.el.preload = 'auto';
   ctx.createMediaElementSource(music.el).connect(musicGain);
-  music.el.addEventListener('ended', () => { if (music.playing) nextSong(); }); // the tape keeps going
+  music.el.addEventListener('ended', () => { if (music.playing && !nextSong()) { music.playing = false; updateUI(); } }); // the tape keeps going
   const s = ctx.createBufferSource();
   s.buffer = ctx.createBuffer(1, 1, 22050);
   s.connect(ctx.destination);
@@ -104,8 +107,9 @@ const fxUrl = (id) => `audio/fx/${id}.mp3`;
 
 async function playVoice() {
   initAudio();
-  stopVoice();
   const msg = nextLine();
+  if (!msg) return flashLabel('NO LINES');
+  stopVoice();
   const v = { msg, srcs: [], start: 0, buf: null };
   voice = v;
   updateUI();
@@ -146,8 +150,9 @@ let songs = [];
 
 async function loadSongList() {
   const list = await fetch('audio/songs/index.json').then((r) => (r.ok ? r.json() : [])).catch(() => []);
-  songs = list.map((s) => ({ title: s.title, url: `audio/songs/${s.file}` }));
+  songs = list.map((s) => ({ key: `song:${s.file}`, title: s.title, url: `audio/songs/${s.file}` }));
   pickSong = shuffleBag(songs);
+  menuGroup('#menu-songs', songs, (s) => s.title);
 }
 
 let labelTimer;
@@ -182,9 +187,14 @@ function startSong(t) {
 function nextSong() {
   if (!songs.length) return flashLabel('NO SONGS');
   if (pos < played.length - 1) pos++;
-  else pos = played.push(pickSong()) - 1;
+  else {
+    const t = pickSong();
+    if (!t) return flashLabel('NO SONGS');
+    pos = played.push(t) - 1;
+  }
   startSong(played[pos]);
   tapeClick();
+  return true;
 }
 
 function prevSong() {
@@ -233,6 +243,53 @@ function setupMediaKeys() {
   on('previoustrack', prevSong);
 }
 
+// ---------- the menu: which songs and voice lines play ----------
+
+// Unticked items are remembered (not ticked ones), so newly added songs and lines start out on.
+const OFF_KEY = 'hotline-off';
+let off = new Set();
+try { off = new Set(JSON.parse(localStorage.getItem(OFF_KEY)) || []); } catch {}
+const isOn = (item) => !off.has(item.key);
+
+function setOn(item, on) {
+  if (on) off.delete(item.key);
+  else off.add(item.key);
+  try { localStorage.setItem(OFF_KEY, JSON.stringify([...off])); } catch {}
+}
+
+// One checkbox per item, plus the group's heading checkbox to tick or untick them all.
+function menuGroup(sel, items, name) {
+  const group = $(sel);
+  const all = group.querySelector('.menu-head input');
+  group.hidden = !items.length;
+  const boxes = items.map((item) => {
+    const li = document.createElement('li');
+    li.innerHTML = '<label><input type="checkbox"><span></span></label>';
+    li.querySelector('span').textContent = name(item);
+    const box = li.querySelector('input');
+    box.checked = isOn(item);
+    box.addEventListener('change', () => { setOn(item, box.checked); sync(); });
+    group.querySelector('ul').append(li);
+    return box;
+  });
+  const sync = () => {
+    const n = boxes.filter((b) => b.checked).length;
+    all.checked = n === boxes.length;
+    all.indeterminate = n > 0 && n < boxes.length;
+  };
+  all.addEventListener('change', () => {
+    items.forEach((item, i) => { boxes[i].checked = all.checked; setOn(item, all.checked); });
+    sync();
+  });
+  sync();
+}
+
+function toggleMenu(open) {
+  $('#menu').classList.toggle('open', open);
+  $('#menu-shade').hidden = !open;
+  $('#menu-btn').setAttribute('aria-expanded', open);
+}
+
 // ---------- the player ----------
 
 function updateUI() {
@@ -276,7 +333,11 @@ fetch('content.json')
   .then((r) => r.json())
   .then((c) => {
     content = c;
-    nextLine = shuffleBag(c.messages.filter((m) => !m.silent));
+    const lines = c.messages.filter((m) => !m.silent).map((m) => ({ ...m, key: `line:${m.id}` }));
+    nextLine = shuffleBag(lines);
+    menuGroup('#menu-lines', lines, (m) => `${m.icon} ${m.label}`);
+    $('#menu-btn').addEventListener('click', () => toggleMenu(!$('#menu').classList.contains('open')));
+    $('#menu-shade').addEventListener('click', () => toggleMenu(false));
     // initAudio runs straight in each tap: iOS only unlocks audio inside the gesture itself.
     const key = (id, fn) => $(id).addEventListener('click', () => { initAudio(); fn(); });
     key('#prev', prevSong);

@@ -15,6 +15,7 @@
   <title>Hotline Machine</title>
 </head>
 <body>
+  <div class="stage">
   <div class="sky" aria-hidden="true"></div>
   <div class="scanlines" aria-hidden="true"></div>
 
@@ -52,6 +53,22 @@
 
     <div class="grille" aria-hidden="true"></div>
   </main>
+
+  <button class="menu-btn" id="menu-btn" aria-label="Choose songs and voice lines" aria-expanded="false" aria-controls="menu">
+    <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5 7h14M5 12h14M5 17h14"/></svg>
+  </button>
+  <div class="menu-shade" id="menu-shade" hidden></div>
+  <aside class="menu" id="menu" aria-label="What plays">
+    <section class="menu-group" id="menu-songs">
+      <label class="menu-head"><input type="checkbox"><span>Songs</span></label>
+      <ul></ul>
+    </section>
+    <section class="menu-group" id="menu-lines">
+      <label class="menu-head"><input type="checkbox"><span>Voice lines</span></label>
+      <ul></ul>
+    </section>
+  </aside>
+  </div>
 
   <script src="app.js"></script>
 </body>

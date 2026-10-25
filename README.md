@@ -5,6 +5,8 @@ A Hotline Miami–style cassette player for the iPhone (installable web app, wor
 - **▶ / ⏸**: plays random songs back to back; press again to pause, and again to resume.
 - **⏮ / ⏭**: previous and next song. Previous restarts the song once it has played a few seconds.
 - **Double-tap ⏭**: plays a random voice line over the music, which goes quieter underneath. Every line plays once before any repeats.
+- **≡ (faint button on the right edge)**: opens a list of songs and voice lines; untick any you don't want played. The choice is remembered on the phone.
+- The app always shows in landscape: held upright, the screen turns on its side.
 
 The voice lines and sound effects are generated locally (Windows text-to-speech plus synthesis). No game audio is included.
 

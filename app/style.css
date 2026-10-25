@@ -27,17 +27,41 @@ body {
   -webkit-user-select: none;
   user-select: none;
   -webkit-touch-callout: none;
-  display: grid;
-  place-items: center;
-  padding-block: env(safe-area-inset-top, 0px) env(safe-area-inset-bottom, 0px);
-  padding-left: max(16px, env(safe-area-inset-left, 0px));
-  padding-right: max(16px, env(safe-area-inset-right, 0px));
 }
 button { font: inherit; color: inherit; border: 0; background: none; cursor: pointer; touch-action: manipulation; }
 
+/* ---------- always landscape ----------
+   iPhones ignore the manifest's orientation, so held upright the whole stage turns on its side.
+   --sw/--sh are the stage's width and height, --st/--sr/--sb/--sl its safe-area insets. */
+.stage {
+  --sw: 100vw; --sh: 100vh;
+  --st: env(safe-area-inset-top, 0px); --sr: env(safe-area-inset-right, 0px);
+  --sb: env(safe-area-inset-bottom, 0px); --sl: env(safe-area-inset-left, 0px);
+  position: fixed; top: 0; left: 0;
+  width: var(--sw); height: var(--sh);
+  isolation: isolate;
+  overflow: hidden;
+  display: grid;
+  place-items: center;
+  padding: var(--st) max(16px, var(--sr)) var(--sb) max(16px, var(--sl));
+}
+@supports (height: 100dvh) { .stage { --sw: 100dvw; --sh: 100dvh; } }
+@media (orientation: portrait) {
+  .stage {
+    --sw: 100vh; --sh: 100vw;
+    /* Turned clockwise: the stage's top is the screen's right edge, its left the screen's top. */
+    --st: env(safe-area-inset-right, 0px); --sr: env(safe-area-inset-bottom, 0px);
+    --sb: env(safe-area-inset-left, 0px); --sl: env(safe-area-inset-top, 0px);
+    left: 100%;
+    transform-origin: 0 0;
+    transform: rotate(90deg);
+  }
+  @supports (height: 100dvh) { .stage { --sw: 100dvh; --sh: 100dvw; } }
+}
+
 /* ---------- Miami sky ---------- */
 .sky {
-  position: fixed; inset: 0; z-index: -2;
+  position: absolute; inset: 0; z-index: -2;
   background:
     repeating-linear-gradient(180deg, transparent 0 34px, rgba(26, 6, 38, .55) 34px 40px) bottom / 100% 32% no-repeat,
     linear-gradient(180deg, #12031c 0%, var(--plum) 35%, #8a1a6e 70%, var(--pink) 100%);
@@ -45,7 +69,7 @@ button { font: inherit; color: inherit; border: 0; background: none; cursor: poi
 }
 @keyframes hue { to { filter: hue-rotate(-35deg) saturate(1.2); } }
 .scanlines {
-  position: fixed; inset: 0; z-index: 50; pointer-events: none;
+  position: absolute; inset: 0; z-index: 50; pointer-events: none;
   background: repeating-linear-gradient(180deg, rgba(0, 0, 0, .18) 0 1px, transparent 1px 3px);
   mix-blend-mode: multiply;
 }
@@ -118,14 +142,50 @@ button { font: inherit; color: inherit; border: 0; background: none; cursor: poi
   opacity: .8;
 }
 
+/* ---------- the menu: which songs and voice lines play ---------- */
+.menu-btn {
+  position: absolute; z-index: 3;
+  top: 50%; right: var(--sr);
+  width: 30px; height: 56px; margin-top: -28px;
+  display: grid; place-items: center;
+  opacity: .22;
+  transition: opacity .2s;
+}
+.menu-btn:active, .menu-btn[aria-expanded="true"] { opacity: .6; }
+.menu-btn:focus-visible { opacity: .8; outline: 2px solid var(--cyan); outline-offset: -2px; border-radius: 8px; }
+.menu-btn svg { width: 16px; height: 16px; fill: none; stroke: #fff; stroke-width: 2.5; stroke-linecap: round; }
+
+.menu-shade { position: absolute; inset: 0; z-index: 4; background: rgba(10, 2, 16, .45); }
+.menu {
+  position: absolute; top: 0; right: 0; bottom: 0; z-index: 5;
+  width: min(300px, 75%);
+  padding: calc(var(--st) + 14px) calc(var(--sr) + 16px) calc(var(--sb) + 14px) 16px;
+  background: rgba(18, 3, 28, .94);
+  border-left: 2px solid var(--pink);
+  box-shadow: -10px 0 40px rgba(0, 0, 0, .5), -2px 0 18px rgba(255, 42, 138, .35);
+  overflow-y: auto;
+  overscroll-behavior: contain;
+  transform: translateX(100%);
+  visibility: hidden;
+  transition: transform .22s ease, visibility 0s .22s;
+}
+.menu.open { transform: none; visibility: visible; transition: transform .22s ease; }
+.menu-group + .menu-group { margin-top: 18px; }
+.menu ul { list-style: none; margin: 0; padding: 0; }
+.menu label { display: flex; align-items: center; gap: 12px; min-height: 40px; font-size: 22px; line-height: 1.1; cursor: pointer; touch-action: manipulation; }
+.menu input { flex: none; width: 20px; height: 20px; margin: 0; accent-color: var(--pink); }
+.menu .menu-head {
+  font: 14px 'Bungee', sans-serif; letter-spacing: 1px; color: var(--cyan);
+  border-bottom: 1px solid rgba(255, 255, 255, .15); margin-bottom: 4px;
+}
+
 /* Phone on its side: the cassette fills the height, with a row of slim keys under it. */
-@media (orientation: landscape) and (max-height: 560px) {
+@media (orientation: landscape) and (max-height: 560px), (orientation: portrait) and (max-width: 560px) {
   .player { width: auto; max-width: none; padding: 12px; gap: 12px; border-radius: 22px; }
   .window { padding: 8px; border-radius: 12px; }
   .cassette {
-    height: calc(100vh - 128px - env(safe-area-inset-top, 0px) - env(safe-area-inset-bottom, 0px));
-    height: calc(100dvh - 128px - env(safe-area-inset-top, 0px) - env(safe-area-inset-bottom, 0px));
-    width: auto; aspect-ratio: 240 / 150; max-width: 80vw;
+    height: calc(var(--sh) - 128px - var(--st) - var(--sb));
+    width: auto; aspect-ratio: 240 / 150; max-width: calc(var(--sw) * .8);
   }
   .keys { gap: 10px; }
   .key { min-height: 0; height: 44px; border-radius: 10px; box-shadow: 0 5px 0 var(--key-lo), 0 7px 10px rgba(0, 0, 0, .35), inset 0 1px 0 rgba(255, 255, 255, .15); }
